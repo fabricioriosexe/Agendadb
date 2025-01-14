@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Agendadb</string>
+
+
+    <!--Botones-->
+    <string name="btn_crear">Crear Base de datos</string>
+
+    <!--Nombres de Listado-->
+    <string name="hint_nombre">Nombre:</string>
+    <string name="hint_telefono">Telefono:</string>
+    <string name="hint_correo">Correo:</string>
+    <string name="btn_guarda">Guardar Registro</string>
+
+
+    <!--Menu-->
+    <string name="menu_nuevo">Nuevo Registro</string>
+</resources>
