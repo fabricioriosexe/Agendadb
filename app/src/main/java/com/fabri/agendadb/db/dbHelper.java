@@ -6,42 +6,73 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import androidx.annotation.Nullable;
 
-// Clase que extiende SQLiteOpenHelper para gestionar la creación y actualización de la base de datos.
+/**
+ * Clase dbHelper que extiende SQLiteOpenHelper para manejar la creación, actualización y conexión
+ * con la base de datos SQLite utilizada por la aplicación.
+ */
 public class dbHelper extends SQLiteOpenHelper {
 
-    // Versión de la base de datos. Se incrementa si hay cambios en la estructura.
+    // Constantes que definen la configuración de la base de datos.
+
+    /**
+     * Versión de la base de datos. Este valor se incrementa cada vez que se realiza un cambio
+     * estructural en la base de datos, como añadir o modificar tablas.
+     */
     private static final int DATABASE_VERSION = 4;
-    // Nombre del archivo de la base de datos.
+
+    /**
+     * Nombre del archivo físico de la base de datos que se almacenará en el sistema de archivos
+     * del dispositivo.
+     */
     private static final String DATABASE_NOMBRE = "agenda.db";
-    // Nombre de la tabla que se va a crear.
+
+    /**
+     * Nombre de la tabla de contactos en la base de datos.
+     */
     public static final String TABLE_CONTACTOS = "t_contactos";
 
-    // Constructor de la clase dbHelper.
-    // Recibe el contexto de la aplicación para interactuar con el sistema.
+    /**
+     * Constructor de la clase dbHelper.
+     * @param context Contexto de la aplicación o actividad que crea esta instancia.
+     */
     public dbHelper(@Nullable Context context) {
+        // Llama al constructor de SQLiteOpenHelper con los parámetros necesarios.
+        // DATABASE_NOMBRE es el nombre del archivo de la base de datos.
+        // DATABASE_VERSION es la versión actual de la base de datos.
         super(context, DATABASE_NOMBRE, null, DATABASE_VERSION);
     }
 
-    // Método que se ejecuta cuando se crea por primera vez la base de datos.
+    /**
+     * Método que se ejecuta automáticamente la primera vez que se accede a la base de datos
+     * y esta aún no ha sido creada.
+     * @param sqLiteDatabase Objeto SQLiteDatabase que representa la base de datos.
+     */
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-        // Se ejecuta la sentencia SQL para crear la tabla "t_contactos".
-        // La tabla incluye un campo id (clave primaria), nombre, teléfono y correo.
+        // Sentencia SQL para crear la tabla "t_contactos".
+        // Incluye las columnas: id (clave primaria autoincremental), nombre, teléfono y correo.
         sqLiteDatabase.execSQL("CREATE TABLE " + TABLE_CONTACTOS + " (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT," + // Campo id, se autoincrementa.
-                "nombre TEXT NOT NULL," +                 // Campo nombre, no permite valores nulos.
-                "telefono TEXT NOT NULL," +               // Campo teléfono, no permite valores nulos.
-                "correo TEXT" +                           // Campo correo, puede ser nulo.
+                "id INTEGER PRIMARY KEY AUTOINCREMENT," + // Columna id: Clave primaria, autoincremental.
+                "nombre TEXT NOT NULL," +                 // Columna nombre: Tipo texto, no puede ser nulo.
+                "telefono TEXT NOT NULL," +               // Columna teléfono: Tipo texto, no puede ser nulo.
+                "correo TEXT" +                           // Columna correo: Tipo texto, puede ser nulo.
                 ")");
     }
 
-    // Método que se ejecuta cuando se detecta un cambio en la versión de la base de datos.
-    // Esto suele usarse para actualizar la estructura de la base de datos.
+    /**
+     * Método que se ejecuta automáticamente cuando hay un cambio en la versión de la base de datos.
+     * Es útil para manejar actualizaciones de la estructura de la base de datos.
+     * @param sqLiteDatabase Objeto SQLiteDatabase que representa la base de datos.
+     * @param oldVersion Número de la versión anterior de la base de datos.
+     * @param newVersion Número de la nueva versión de la base de datos.
+     */
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
-        // Elimina la tabla existente si ya estaba creada.
+        // Elimina la tabla existente si ya estaba creada previamente.
+        // Esto asegura que la estructura de la base de datos sea la más reciente.
         sqLiteDatabase.execSQL("DROP TABLE " + TABLE_CONTACTOS);
-        // Vuelve a crear la tabla desde cero.
+
+        // Llama al método onCreate para volver a crear la tabla con la nueva estructura.
         onCreate(sqLiteDatabase);
     }
 }
