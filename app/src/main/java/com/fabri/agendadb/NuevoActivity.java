@@ -6,13 +6,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.fabri.agendadb.db.dbContactos;
+import com.fabri.agendadb.db.DBHelper;
+import com.fabri.agendadb.entidades.Contactos;
 
 /**
  * Clase para la actividad "NuevoActivity", que permite al usuario agregar un nuevo contacto a la base de datos.
@@ -21,58 +21,52 @@ public class NuevoActivity extends AppCompatActivity {
 
     // Declaración de campos de texto para capturar el nombre, teléfono y correo del contacto.
     EditText txtNombre, txtTelefono, txtCorreo;
+
     // Botón para guardar el contacto en la base de datos.
-    Button btnGuarda;
+    Button btnGuardar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Activa el diseño Edge-to-Edge para optimizar la interfaz en pantallas modernas.
-        EdgeToEdge.enable(this);
-
         // Establece el diseño visual de la actividad utilizando el archivo XML correspondiente.
         setContentView(R.layout.activity_nuevo);
 
         // Vincula los elementos de la interfaz definidos en el diseño XML.
-        txtNombre = findViewById(R.id.txtNombre);   // Campo de texto para el nombre.
-        txtCorreo = findViewById(R.id.txtCorreo);   // Campo de texto para el correo.
+        txtNombre = findViewById(R.id.txtNombre);     // Campo de texto para el nombre.
+        txtCorreo = findViewById(R.id.txtCorreo);     // Campo de texto para el correo.
         txtTelefono = findViewById(R.id.txtTelefono); // Campo de texto para el teléfono.
-        btnGuarda = findViewById(R.id.btnGuardar);  // Botón para guardar el contacto.
+        btnGuardar = findViewById(R.id.btnGuardar);   // Botón para guardar el contacto.
 
         // Configura el evento clic para el botón "Guardar".
-        btnGuarda.setOnClickListener(new View.OnClickListener() {
+        btnGuardar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // Instancia de la clase dbContactos para interactuar con la base de datos.
-                dbContactos dbcontactos = new dbContactos(NuevoActivity.this);
+                // Crear una instancia de la clase Contactos para almacenar los datos ingresados.
+                Contactos contacto = new Contactos();
+                contacto.setNombre(txtNombre.getText().toString());   // Obtiene el nombre.
+                contacto.setTelefono(txtTelefono.getText().toString()); // Obtiene el teléfono.
+                contacto.setCoreo(txtCorreo.getText().toString());     // Obtiene el correo.
 
-                // Inserta el contacto en la base de datos utilizando los valores ingresados por el usuario.
-                long id = dbcontactos.insertarContactos(
-                        txtNombre.getText().toString(),    // Obtiene el texto del campo "Nombre".
-                        txtTelefono.getText().toString(), // Obtiene el texto del campo "Teléfono".
-                        txtCorreo.getText().toString()    // Obtiene el texto del campo "Correo".
-                );
-
-                // Verifica si el contacto fue guardado correctamente.
-                if (id > 0) {
-                    // Muestra un mensaje de éxito al usuario.
-                    Toast.makeText(NuevoActivity.this, "Registro Guardado",
+                // Validar que los campos requeridos no estén vacíos.
+                if (contacto.getNombre().isEmpty() || contacto.getTelefono().isEmpty()) {
+                    Toast.makeText(NuevoActivity.this, "Por favor, complete los campos obligatorios",
                             Toast.LENGTH_LONG).show();
-                } else {
-                    // Muestra un mensaje de error al usuario.
-                    Toast.makeText(NuevoActivity.this, "Error al Guardar",
-                            Toast.LENGTH_LONG).show();
+                    return;
                 }
-            }
 
-            /**
-             * Método para limpiar los campos de texto después de guardar un contacto.
-             */
-            private void limpiar() {
-                txtNombre.setText("");   // Limpia el campo de texto para el nombre.
-                txtTelefono.setText(""); // Limpia el campo de texto para el teléfono.
-                txtCorreo.setText("");   // Limpia el campo de texto para el correo.
+                // Instancia de la clase DBHelper para interactuar con la base de datos.
+                DBHelper dbHelper = new DBHelper(NuevoActivity.this);
+
+                // Llama al método insertContacto para guardar el contacto en la base de datos.
+                dbHelper.insertContacto(contacto);
+
+                // Mostrar un mensaje de éxito al usuario.
+                Toast.makeText(NuevoActivity.this, "Contacto guardado exitosamente",
+                        Toast.LENGTH_LONG).show();
+
+                // Limpia los campos del formulario.
+                limpiar();
             }
         });
 
@@ -82,5 +76,14 @@ public class NuevoActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+    }
+
+    /**
+     * Método para limpiar los campos del formulario después de guardar un contacto.
+     */
+    private void limpiar() {
+        txtNombre.setText("");   // Limpia el campo de texto para el nombre.
+        txtTelefono.setText(""); // Limpia el campo de texto para el teléfono.
+        txtCorreo.setText("");   // Limpia el campo de texto para el correo.
     }
 }

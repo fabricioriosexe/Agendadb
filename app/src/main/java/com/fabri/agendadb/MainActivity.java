@@ -1,15 +1,11 @@
 package com.fabri.agendadb;
 
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,23 +15,22 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.fabri.agendadb.R;
-import com.fabri.agendadb.adaptadores.ListaContactosAdapter;
-import com.fabri.agendadb.db.dbContactos;
-import com.fabri.agendadb.db.dbHelper;
+import com.fabri.agendadb.db.DBHelper;
 import com.fabri.agendadb.entidades.Contactos;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Clase principal de la aplicación. Es el punto de entrada donde se inicializan los componentes principales.
  */
 public class MainActivity extends AppCompatActivity {
 
-    // RecyclerView para mostrar la lista de contactos.
-    RecyclerView listaContactos;
+
     // Lista de contactos que se utilizará para llenar el RecyclerView.
     ArrayList<Contactos> listaArrayContactos;
+
+    DBHelper dbhelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,25 +42,23 @@ public class MainActivity extends AppCompatActivity {
         // Establece el diseño visual para esta actividad.
         setContentView(R.layout.activity_main);
 
-        // Vincula el RecyclerView definido en el diseño XML.
-        listaContactos = findViewById(R.id.listaContactos);
-
-        // Establece el administrador de diseño para mostrar los elementos en una lista vertical.
-        listaContactos.setLayoutManager(new LinearLayoutManager(this));
-
-        // Instancia la base de datos para obtener los contactos almacenados.
-        dbContactos dbcontactos = new dbContactos(MainActivity.this);
-
         // Inicializa la lista de contactos.
         listaArrayContactos = new ArrayList<>();
 
-        // Crea un adaptador que vincula los datos de la base de datos al RecyclerView.
-        ListaContactosAdapter adapter = new ListaContactosAdapter(dbcontactos.mostrarContactos());
-        // Establece el adaptador en el RecyclerView.
-        listaContactos.setAdapter(adapter);
+        // Instancia la clase DBHelper para acceder a la base de datos.
+        dbhelper = new DBHelper(MainActivity.this);
+
+        // Aquí llamamos al método buscarContactos para obtener la lista de contactos
+        List<Contactos> contactos = dbhelper.buscarContactos();
+
+        // Imprime los contactos en la consola
+        for (Contactos contacto : contactos) {
+            Log.d("MainActivity", "Contacto: ID = " + contacto.getId() + ", Nombre = " + contacto.getNombre() +
+                    ", Teléfono = " + contacto.getTelefono() + ", Correo = " + contacto.getCoreo());
+        }
 
         // Ajusta los márgenes de la interfaz para acomodarse a las barras del sistema (status bar, navigation bar).
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainActivity), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;

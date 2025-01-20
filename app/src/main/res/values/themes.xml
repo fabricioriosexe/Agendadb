@@ -6,4 +6,8 @@
     </style>
 
     <style name="Theme.Agendadb" parent="Base.Theme.Agendadb" />
+
+    <style name="Theme.TextMain" parent="Base.Theme.Agendadb" >
+        <item name="android:fontFamily">@font/M1</item>
+    </style>
 </resources>

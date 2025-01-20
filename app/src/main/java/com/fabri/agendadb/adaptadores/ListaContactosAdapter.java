@@ -1,5 +1,7 @@
 package com.fabri.agendadb.adaptadores;
 
+import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.fabri.agendadb.R;
 import com.fabri.agendadb.entidades.Contactos;
+import com.fabri.agendadb.verActivity;
 
 import java.util.ArrayList;
 
@@ -87,6 +90,16 @@ public class ListaContactosAdapter extends RecyclerView.Adapter<ListaContactosAd
             viewNombre = itemView.findViewById(R.id.viewNombre);
             viewcorreo = itemView.findViewById(R.id.viewCorreo);
             viewTelefono = itemView.findViewById(R.id.viewTelefono);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Context context = view.getContext();
+                    Intent intent = new Intent(context, verActivity.class);
+                    intent.putExtra("ID", listacontactos.get(getAdapterPosition()).getId());
+                    context.startActivity(intent);
+                }
+            });
         }
     }
 }
