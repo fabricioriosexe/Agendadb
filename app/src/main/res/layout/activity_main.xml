@@ -6,7 +6,8 @@
     android:id="@+id/mainActivity"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:theme="@style/Theme.TextMain">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,23 +17,15 @@
         <SearchView
             android:id="@+id/txtBuscar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:queryHint="Buscar contactos..." />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/listaContactos"
+
+        <ListView
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight=".9" />
+            android:layout_height="match_parent"
+            android:id="@+id/vistaContactos" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/favNuevo"
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_gravity="bottom|end"
-            android:layout_marginRight="10dp"
-            android:layout_weight=".1"
-            android:clickable="true"
-            android:focusable="true"
-            app:backgroundTint="@color/design_default_color_primary" />
+
     </LinearLayout>
 </LinearLayout>

@@ -173,7 +173,7 @@ public class DBHelper extends SQLiteAssetHelper {
     public void deleteContacto(int idContacto) {
         SQLiteDatabase db = getWritableDatabase();
         // Ejecuta la eliminación en la tabla "Contactos", buscando por el ID del contacto
-        db.delete("Contactos", "id = ?", new String[]{String.valueOf(idContacto)});
+        db.delete("Contacto ", "id = ?", new String[]{String.valueOf(idContacto)});
         db.close();
     }
 

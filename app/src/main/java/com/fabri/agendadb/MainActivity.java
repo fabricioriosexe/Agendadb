@@ -6,103 +6,118 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.AdapterView;
+import android.widget.ListView;
+import android.widget.SearchView;
+import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
+import com.fabri.agendadb.adaptadores.ListaContactosAdapter;
 import com.fabri.agendadb.db.DBHelper;
 import com.fabri.agendadb.entidades.Contactos;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Clase principal de la aplicación. Es el punto de entrada donde se inicializan los componentes principales.
- */
 public class MainActivity extends AppCompatActivity {
-
-
-    // Lista de contactos que se utilizará para llenar el RecyclerView.
-    ArrayList<Contactos> listaArrayContactos;
-
+    List<Contactos> listaContactosFiltrados;
+    List<Contactos> listaArrayContactos;
     DBHelper dbhelper;
+    ListaContactosAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Activa el diseño Edge-to-Edge, optimizando la visualización en dispositivos modernos.
-        EdgeToEdge.enable(this);
-
-        // Establece el diseño visual para esta actividad.
         setContentView(R.layout.activity_main);
 
-        // Inicializa la lista de contactos.
-        listaArrayContactos = new ArrayList<>();
-
-        // Instancia la clase DBHelper para acceder a la base de datos.
+        // Inicializa las listas y DBHelper
+        listaContactosFiltrados = new ArrayList<>();  // Inicializa lista filtrada
         dbhelper = new DBHelper(MainActivity.this);
 
-        // Aquí llamamos al método buscarContactos para obtener la lista de contactos
-        List<Contactos> contactos = dbhelper.buscarContactos();
+        // Obtén los contactos de la base de datos
+        listaArrayContactos = dbhelper.buscarContactos();
+        listaContactosFiltrados = new ArrayList<>(listaArrayContactos);  // Copia los datos a la lista filtrada
 
-        // Imprime los contactos en la consola
-        for (Contactos contacto : contactos) {
-            Log.d("MainActivity", "Contacto: ID = " + contacto.getId() + ", Nombre = " + contacto.getNombre() +
-                    ", Teléfono = " + contacto.getTelefono() + ", Correo = " + contacto.getCoreo());
-        }
+        // Configura el ListView con un adaptador personalizado
+        ListView listView = findViewById(R.id.vistaContactos);
+        adapter = new ListaContactosAdapter(this, R.layout.lista_item_contacto, listaContactosFiltrados, dbhelper);  // Usa lista filtrada
+        listView.setAdapter(adapter);
 
-        // Ajusta los márgenes de la interfaz para acomodarse a las barras del sistema (status bar, navigation bar).
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainActivity), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
+        // Configura el clic en los elementos para ver detalles
+        listView.setOnItemClickListener((adapterView, view, position, id) -> {
+            Contactos contactoSeleccionado = listaContactosFiltrados.get(position);  // Usa lista filtrada
+            Intent intent = new Intent(this, verActivity.class);  // Asegúrate de que VerActivity existe
+            intent.putExtra("ID", contactoSeleccionado.getId());
+            startActivity(intent);
+        });
+
+        // Configura el SearchView para buscar contactos
+        SearchView searchView = findViewById(R.id.txtBuscar);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                // No es necesario hacer nada al presionar Enter
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                // Filtra la lista de contactos según el texto ingresado
+                filterList(newText);
+                return false;
+            }
         });
     }
 
-    /**
-     * Crea el menú de opciones para la actividad.
-     * @param menu El menú donde se inflará la vista del menú principal.
-     * @return true si se creó el menú correctamente.
-     */
+    // Método para filtrar la lista
+    private void filterList(String query) {
+        listaContactosFiltrados.clear();
+        if (query.isEmpty()) {
+            listaContactosFiltrados.addAll(listaArrayContactos);  // Si no hay texto, muestra todos los contactos
+        } else {
+            for (Contactos contacto : dbhelper.buscarContactos()) {
+                if (contacto.getNombre().toLowerCase().contains(query.toLowerCase()) ||
+                        contacto.getTelefono().toLowerCase().contains(query.toLowerCase())) {
+                    listaContactosFiltrados.add(contacto);  // Filtra por nombre o teléfono
+                }
+            }
+        }
+        adapter.notifyDataSetChanged();  // Notifica al adaptador para que actualice la vista
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Infla el menú utilizando el archivo XML "menu_principal".
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu_principal, menu);
+        inflater.inflate(R.menu.menu_principal, menu);  // Asegúrate de que el archivo XML exista
         return true;
     }
 
-    /**
-     * Maneja las acciones seleccionadas en el menú de opciones.
-     * @param item El elemento del menú que fue seleccionado.
-     * @return true si se manejó el evento, false si se delega a la superclase.
-     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Verifica si se seleccionó el elemento de "Nuevo Registro".
         if (item.getItemId() == R.id.menuNuevo) {
-            // Llama al método para abrir la actividad de nuevo registro.
             nuevoRegistro();
             return true;
         } else {
-            // Delega el manejo a la superclase para otros elementos del menú.
             return super.onOptionsItemSelected(item);
         }
     }
 
-    /**
-     * Abre la actividad para crear un nuevo registro.
-     */
     private void nuevoRegistro() {
-        // Crea un Intent para iniciar la actividad "NuevoActivity".
-        Intent intent = new Intent(this, NuevoActivity.class);
+        Intent intent = new Intent(this, NuevoActivity.class);  // Asegúrate de que NuevoActivity existe
         startActivity(intent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Actualiza la lista de contactos con los últimos datos de la base de datos
+        listaArrayContactos.clear();
+        listaArrayContactos.addAll(dbhelper.buscarContactos());  // Asegúrate de que este método está bien implementado
+        listaContactosFiltrados.clear();
+        listaContactosFiltrados.addAll(listaArrayContactos);  // Restablece la lista filtrada
+        adapter.clear();
+        adapter.addAll(dbhelper.buscarContactos());
+        adapter.notifyDataSetChanged();
     }
 }
