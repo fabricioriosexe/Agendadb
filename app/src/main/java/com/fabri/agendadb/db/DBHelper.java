@@ -1,20 +1,21 @@
 package com.fabri.agendadb.db;
 
-import android.content.ContentValues;
-import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+// Importación de las librerías necesarias
+import android.content.ContentValues;  // Para manejar valores de la base de datos como pares clave-valor
+import android.content.Context;       // Para acceder al contexto de la aplicación
+import android.database.Cursor;       // Para acceder a los resultados de una consulta SQL
+import android.database.sqlite.SQLiteDatabase;  // Para interactuar con la base de datos SQLite
 
-import com.fabri.agendadb.entidades.Contactos;
-import com.readystatesoftware.sqliteasset.SQLiteAssetHelper;
+import com.fabri.agendadb.entidades.Contactos;  // Para manejar la clase Contactos
+import com.readystatesoftware.sqliteasset.SQLiteAssetHelper;  // Ayuda para trabajar con bases de datos pre-pobladas
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.File;        // Para trabajar con archivos
+import java.io.FileOutputStream;  // Para escribir archivos
+import java.io.IOException;  // Para manejar errores de entrada/salida
+import java.io.InputStream;  // Para leer archivos
+import java.io.OutputStream;  // Para escribir en archivos
+import java.util.ArrayList;  // Para usar listas dinámicas
+import java.util.List;  // Para trabajar con listas
 
 /**
  * Clase DBHelper que extiende SQLiteAssetHelper.
@@ -28,6 +29,14 @@ public class DBHelper extends SQLiteAssetHelper {
 
     // Versión actual de la base de datos
     private static final int DATABASE_VERSION = 1;
+
+    // Nombres de tabla y columnas
+    private static final String TABLE_CONTACTOS = "Contacto";  // Tabla que contiene los contactos
+    private static final String COLUMN_ID = "id";             // Columna para el ID del contacto
+    private static final String COLUMN_NOMBRE = "nombre";     // Columna para el nombre del contacto
+    private static final String COLUMN_TELEFONO = "telefono"; // Columna para el teléfono del contacto
+    private static final String COLUMN_CORREO = "correo";     // Columna para el correo del contacto
+
 
     /**
      * Constructor de la clase DBHelper.
@@ -109,6 +118,7 @@ public class DBHelper extends SQLiteAssetHelper {
         return context.getDatabasePath(DATABASE_NAME).getPath();
     }
 
+    // Insertar un nuevo contacto en la base de datos
     public void insertContacto(Contactos contacto) {
         // Obtener la base de datos en modo escritura
         SQLiteDatabase db = getWritableDatabase();
@@ -121,19 +131,20 @@ public class DBHelper extends SQLiteAssetHelper {
         cv.put("telefono", contacto.getTelefono());     // Columna "telefono"
         cv.put("correo", contacto.getCoreo());          // Columna "correo"
 
-        // Insertar los datos en la tabla "t_contactos"
+        // Insertar los datos en la tabla "Contacto"
         db.insert("Contacto", null, cv);
 
         // Cerrar la conexión con la base de datos
         db.close();
     }
 
+    // Buscar todos los contactos en la base de datos
     public List<Contactos> buscarContactos() {
         List<Contactos> returnList = new ArrayList<>();  // Lista donde se almacenarán los contactos obtenidos.
 
         SQLiteDatabase db = getReadableDatabase();  // Obtiene la base de datos en modo lectura.
 
-        // Consulta SQL para seleccionar todos los contactos de la tabla "t_contactos"
+        // Consulta SQL para seleccionar todos los contactos de la tabla "Contacto"
         String query = "SELECT DISTINCT * FROM Contacto";
 
         // Ejecuta la consulta y obtiene un cursor con los resultados.
@@ -169,13 +180,34 @@ public class DBHelper extends SQLiteAssetHelper {
         return returnList;
     }
 
-    // En DBHelper.java
+    // Eliminar un contacto por su ID
     public void deleteContacto(int idContacto) {
         SQLiteDatabase db = getWritableDatabase();
-        // Ejecuta la eliminación en la tabla "Contactos", buscando por el ID del contacto
+        // Ejecuta la eliminación en la tabla "Contacto", buscando por el ID del contacto
         db.delete("Contacto ", "id = ?", new String[]{String.valueOf(idContacto)});
         db.close();
     }
 
+    // Actualizar un contacto en la base de datos
+    public void updateContacto(Contactos contacto) {
+        if (contacto == null || contacto.getId() <= 0) {
+            throw new IllegalArgumentException("El contacto es nulo o tiene un ID inválido");
+        }
 
+        SQLiteDatabase db = null;
+        try {
+            db = getWritableDatabase();
+            ContentValues cv = new ContentValues();
+
+            // Agregamos los valores que se actualizarán
+            cv.put(COLUMN_NOMBRE, contacto.getNombre());
+            cv.put(COLUMN_TELEFONO, contacto.getTelefono());
+            cv.put(COLUMN_CORREO, contacto.getCoreo());
+
+            // Actualizamos la tabla usando el ID del contacto como criterio
+            db.update(TABLE_CONTACTOS, cv, COLUMN_ID + " = ?", new String[]{String.valueOf(contacto.getId())});
+        } finally {
+            if (db != null) db.close();
+        }
+    }
 }
